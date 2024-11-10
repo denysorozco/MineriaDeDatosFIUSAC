@@ -13,8 +13,8 @@ output: html_notebook
 ```{r}
 library(dplyr)
 library(arules)
-library(fim4r)
 library(ggplot2)
+library(fim4r)
 library(haven)
 library(vctrs)
 ```
@@ -23,24 +23,24 @@ library(vctrs)
 ### Fuente: https://www.ine.gob.gt/vitales/
 ```{r}
 ### Año 01 - 2013
-datos_2013_D <- read_sav("")
-datos_2013_DF <- read_sav("")
+datos_2013_D <- read_sav("_D_2013.sav")
+datos_2013_DF <- read_sav("DF_2013.sav")
 
 ### Año 02 - 2014
-datos_2014_D <- read_sav("")
-datos_2014_DF <- read_sav("")
+datos_2014_D <- read_sav("_D_2014.sav")
+datos_2014_DF <- read_sav("DF_2014.sav")
 
 ### Año 03 - 2015
-datos_2015_D <- read_sav("")
-datos_2015_DF <- read_sav("")
+datos_2015_D <- read_sav("_D_2015.sav")
+datos_2015_DF <- read_sav("DF_2015.sav")
 
 ### Año 04 - 2016
-datos_2016_D <- read_sav("")
-datos_2016_DF <- read_sav("")
+datos_2016_D <- read_sav("_20171204152107_D_2016.sav")
+datos_2016_DF <- read_sav("20171204152457_DF_2016.sav")
 
 ### Año 05 - 2017
 datos_2017_D <- read_sav("_20181226142907_D_2017.sav")
-datso_2017_DF <- read_sav("20181226143403_DF_2017.sav")
+datos_2017_DF <- read_sav("20181226143403_DF_2017.sav")
 
 ### Año 06 - 2018
 datos_2018_D <-read_sav("_20191129152006_D_2018.sav")
@@ -65,8 +65,56 @@ datos_2022_DF <- read_sav("20230828230013_DF_2022.sav")
 
 ### Paso 4: Unificar la informacion en memoria en un solo archivo de memoria
 ```{r}
-datos_d <- bind_rows(datos_2017_D,datos_2018_D,datos_2019_D,datos_2020_D,datos_2021_D,datos_2022_D)
+datos_d <- bind_rows(datos_2013_D,
+                     datos_2014_D,
+                     datos_2015_D,
+                     datos_2016_D,
+                     datos_2017_D,
+                     datos_2018_D,
+                     datos_2019_D,
+                     datos_2020_D,
+                     datos_2021_D,
+                     datos_2022_D)
 
-datos_df <- bind_rows(datos_2018_DF,datos_2019_DF,datos_2020_DF,datos_2021_DF,datos_2022_DF)
+datos_df <- bind_rows(datos_2013_DF,
+                      datos_2014_DF,
+                      datos_2015_DF,
+                      datos_2016_DF,
+                      datos_2017_DF,
+                      datos_2018_DF,
+                      datos_2019_DF,
+                      datos_2020_DF,
+                      datos_2021_DF,
+                      datos_2022_DF)
+
+datos_2013_DF <- datos_2013_DF[-23]
+datos_2014_DF <- datos_2014_DF[-23]
+datos_2015_DF <- datos_2015_DF[-24]
+datos_2016_DF <- datos_2016_DF[-24]
+datos_2017_DF <- datos_2017_DF[-24]
+datos_2018_DF <- datos_2018_DF[-23]
+datos_2019_DF <- datos_2019_DF[-23]
+datos_2020_DF <- datos_2020_DF[-23]
+datos_2021_DF <- datos_2021_DF[-23]
+datos_2022_DF <- datos_2022_DF[-23]
+
+datos_df <- bind_rows(datos_2013_DF,
+                      datos_2014_DF,
+                      datos_2015_DF,
+                      datos_2016_DF,
+                      datos_2017_DF,
+                      datos_2018_DF,
+                      datos_2019_DF,
+                      datos_2020_DF,
+                      datos_2021_DF,
+                      datos_2022_DF)
 ```
 
+### Uso del algoritmo APRIORI para buscar reglas de asociacion
+```{r}
+reglas_apriori_d <- apriori(datos_d, parameter = list(support = 0.3, confidence = 0.5))
+reglas_apriori_df <- apriori(datos_df, parameter = list(support = 0.3, confidence = 0.5))
+
+inspect(reglas_apriori_d[0:100])
+inspect(reglas_apriori_df[0:100])
+```
