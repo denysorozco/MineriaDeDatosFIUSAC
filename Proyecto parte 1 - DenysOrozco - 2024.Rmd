@@ -1,0 +1,72 @@
+# Universidad de San Carlos de Guatemala
+# Facultad de Ingeniería
+# Escuela de Estudios de Postgrado
+# Curso: Mineria de Datos.
+# Introducción a la Minería de Datos
+# Alumno: Denys Fernando Orozco Escobar
+---
+title: "Proyecto - Parte 1: Analisis de defunciones y defunciones fetales."
+output: html_notebook
+---
+
+### Paso 1: Carga de las librerias necesarias para el analisis con el sotfware de RStudio.
+```{r}
+library(dplyr)
+library(arules)
+library(fim4r)
+library(ggplot2)
+library(haven)
+library(vctrs)
+```
+
+###Paso 2: Cargar archivos a memoria.
+### Fuente: https://www.ine.gob.gt/vitales/
+```{r}
+### Año 01 - 2013
+datos_2013_D <- read_sav("")
+datos_2013_DF <- read_sav("")
+
+### Año 02 - 2014
+datos_2014_D <- read_sav("")
+datos_2014_DF <- read_sav("")
+
+### Año 03 - 2015
+datos_2015_D <- read_sav("")
+datos_2015_DF <- read_sav("")
+
+### Año 04 - 2016
+datos_2016_D <- read_sav("")
+datos_2016_DF <- read_sav("")
+
+### Año 05 - 2017
+datos_2017_D <- read_sav("_20181226142907_D_2017.sav")
+datso_2017_DF <- read_sav("20181226143403_DF_2017.sav")
+
+### Año 06 - 2018
+datos_2018_D <-read_sav("_20191129152006_D_2018.sav")
+datos_2018_DF <- read_sav("20191129151836_DF_2018.sav")
+
+### Año 07 - 2019 
+datos_2019_D <- read_sav("_20201201154851_D_2019.sav")
+datos_2019_DF <- read_sav("20201201154808_DF_2019.sav")
+
+### Año 08 - 2020
+datos_2020_D <- read_sav("_20210930225530_D_2020.sav")
+datos_2020_DF <- read_sav("20210930171901_DF_2020.sav")
+
+### Año 09 - 2021
+datos_2021_D <- read_sav("_20220929170549_D_2021.sav")
+datos_2021_DF <- read_sav("20220831203224_DF_2021.sav")
+
+### Año 10 - 2022
+datos_2022_D <- read_sav("_20230919232405_D_2022.sav")
+datos_2022_DF <- read_sav("20230828230013_DF_2022.sav")
+```
+
+### Paso 4: Unificar la informacion en memoria en un solo archivo de memoria
+```{r}
+datos_d <- bind_rows(datos_2017_D,datos_2018_D,datos_2019_D,datos_2020_D,datos_2021_D,datos_2022_D)
+
+datos_df <- bind_rows(datos_2018_DF,datos_2019_DF,datos_2020_DF,datos_2021_DF,datos_2022_DF)
+```
+
