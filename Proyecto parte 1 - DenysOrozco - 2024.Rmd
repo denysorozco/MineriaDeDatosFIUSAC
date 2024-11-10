@@ -17,6 +17,7 @@ library(ggplot2)
 library(fim4r)
 library(haven)
 library(vctrs)
+library(arulesViz)
 ```
 
 ###Paso 2: Cargar archivos a memoria.
@@ -117,4 +118,17 @@ reglas_apriori_df <- apriori(datos_df, parameter = list(support = 0.3, confidenc
 
 inspect(reglas_apriori_d[0:100])
 inspect(reglas_apriori_df[0:100])
+
+reglas_apriori_d_interesantes <- head(sort(reglas_apriori_d, by = "lift"), 10)
+plot(reglas_apriori_d_interesantes, method = "graph")
+
+reglas_apriori_df_interesantes <- head(sort(reglas_apriori_df, by = "lift"), 10)
+plot(reglas_apriori_df_interesantes, method = "graph")
 ```
+
+### Uso del algoritmo FPGrowth
+```{r}
+datos_d$Depreg <- as_factor(datos_d$Depreg)
+reglas_fpgrowth_d <- fim4r(datos_d, method = "fpgrowth", target="rules", supp = .2, conf = .5)
+```
+
