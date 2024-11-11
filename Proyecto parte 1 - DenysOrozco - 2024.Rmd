@@ -77,16 +77,18 @@ datos_d <- bind_rows(datos_2013_D,
                      datos_2021_D,
                      datos_2022_D)
 
-datos_df <- bind_rows(datos_2013_DF,
-                      datos_2014_DF,
-                      datos_2015_DF,
-                      datos_2016_DF,
-                      datos_2017_DF,
-                      datos_2018_DF,
-                      datos_2019_DF,
-                      datos_2020_DF,
-                      datos_2021_DF,
-                      datos_2022_DF)
+### Liberando la memoria NO UTILIZADA
+rm(datos_2013_D)
+rm(datos_2014_D)
+rm(datos_2015_D)
+rm(datos_2016_D)
+rm(datos_2017_D)
+rm(datos_2018_D)
+rm(datos_2019_D)
+rm(datos_2020_D)
+rm(datos_2021_D)
+rm(datos_2022_D)
+gc()
 
 datos_2013_DF <- datos_2013_DF[-23]
 datos_2014_DF <- datos_2014_DF[-23]
@@ -109,9 +111,22 @@ datos_df <- bind_rows(datos_2013_DF,
                       datos_2020_DF,
                       datos_2021_DF,
                       datos_2022_DF)
+
+### Liberando la memoria NO UTILIZADA
+rm(datos_2013_DF)
+rm(datos_2014_DF)
+rm(datos_2015_DF)
+rm(datos_2016_DF)
+rm(datos_2017_DF)
+rm(datos_2018_DF)
+rm(datos_2019_DF)
+rm(datos_2020_DF)
+rm(datos_2021_DF)
+rm(datos_2022_DF)
+gc()
 ```
 
-### Uso del algoritmo APRIORI para buscar reglas de asociacion
+### Codigo de uso del algoritmo APRIORI para buscar reglas de asociacion
 ```{r}
 reglas_apriori_d <- apriori(datos_d, parameter = list(support = 0.3, confidence = 0.5))
 reglas_apriori_df <- apriori(datos_df, parameter = list(support = 0.3, confidence = 0.5))
@@ -126,9 +141,56 @@ reglas_apriori_df_interesantes <- head(sort(reglas_apriori_df, by = "lift"), 10)
 plot(reglas_apriori_df_interesantes, method = "graph")
 ```
 
-### Uso del algoritmo FPGrowth
+### Codigo de uso del algoritmo FPGrowth
 ```{r}
-datos_d$Depreg <- as_factor(datos_d$Depreg)
 reglas_fpgrowth_d <- fim4r(datos_d, method = "fpgrowth", target="rules", supp = .2, conf = .5)
+reglas_fpgrowth_df <- fim4r(datos_df, method = "fpgrowth", target="rules", supp = .2, conf = .5)
+
+reglas_fpgrowth_d_interesantes <- head(sort(reglas_fpgrowth_d, by = "lift"), 10)
+plot(reglas_fpgrowth_d_interesantes, method = "graph")
+
+reglas_fpgrowth_df_interesantes <- head(sort(reglas_fpgrowth_df, by = "lift"), 10)
+plot(reglas_fpgrowth_df_interesantes, method = "graph")
 ```
 
+### Codigo de uso del algoritmo KMEANS
+```{r}
+# Lista de defunciones
+cluster_edad_causa_d <- datos_d %>%
+                        select(Edadif,Caudef)
+
+# Dataframe
+frame_edad_causa_d <- as.data.frame(cluster_edad_causa_d)
+
+# Factor
+frame_edad_causa_d$Caudef <- as.factor(frame_edad_causa_d$Caudef)
+
+# One-hot encoding
+
+frame_one_hot_causa <- model.matrix(~ Caudef-1, data = frame_edad_causa_d)
+
+# Uniendo
+cluster_edad_causa_d <- cbind(frame_edad_causa_d["Edadif"], frame_one_hot_causa)
+rm(frame_one_hot_causa)
+gc()
+
+###### APLICANDO K-Means ######
+reglas_kmeans_edad_causa_d <- kmeans(cluster_edad_causa_d, centers = 4)
+
+# Lista de defunciones fetales
+cluster_edad_causa_df <- datos_df %>%
+                        select(EDADM,CAUDEF)
+
+# Dataframe
+frame_edad_causa_df <- as.data.frame(cluster_edad_causa_df)
+
+# Factor
+frame_edad_causa_df$CAUDEF <- as.factor(frame_edad_causa_df$CAUDEF)
+
+# One-hot encoding
+# Primero liberamos memoria
+rm(cluster_edad_causa_df)
+gc()
+
+
+```
