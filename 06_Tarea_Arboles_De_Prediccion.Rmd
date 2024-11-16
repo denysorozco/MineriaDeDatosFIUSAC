@@ -1,0 +1,88 @@
+# Universidad de San Carlos de Guatemala
+# Facultad de Ingeniería
+# Escuela de Estudios de Postgrado
+# Curso: Mineria de Datos.
+# Introducción a la Minería de Datos
+# Alumno: Denys Fernando Orozco Escobar
+---
+title: "Predicción utilizando árboles"
+output: html_notebook
+---
+
+```{r}
+### Implementación de librerias
+install.packages("rpart")
+install.packages("rpart.plot")
+
+library(rpart)
+library(rpart.plot)
+```
+
+```{r}
+### Carga de archivos
+vivienda <- read.csv('../VIVIENDA_BDP.csv', sep = ',')
+hogar <- read.csv('../HOGAR_BDP.csv', sep = ',')
+
+```
+
+```{r}
+### Implementacion de codigo para algoritmo de prediccion
+area_propiedad <- rpart(AREA ~
+                          PCH1+
+                          PCH2+
+                          PCH3+
+                          PCH15+
+                          PEI1,
+                        data = hogar, method = "class")
+
+rpart.plot(area_propiedad, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Predicción de Area por Propietario", cex = 1)
+```
+
+```{r}
+### Entrenamiento areaprop--
+propietario <- data.frame(
+  PCH1=c(1),
+  PCH2=c(3),
+  PCH3=c(3),
+  PCH15=c(2),
+  PEI1=c(2)
+  )
+
+resultado <- predict(area_propiedad,propietario, type="class")
+
+resultado
+
+
+
+### Duenio de hogar
+duenio <- rpart(AREA ~
+                  PCH11+
+                  PCH12+
+                  PCH15+
+                  PEI1+
+                  PCH1,
+                data = hogar, method = "class")
+
+rpart.plot(duenio, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Predicción dueños de hogar", cex = 1)
+```
+
+
+```{r}
+### 
+electronicos <- rpart(DEPARTAMENTO ~
+                    PCH8+
+                    PCH9_A+
+                    PCH9_B+
+                    PCH9_C+
+                    PCH9_E+
+                    PCH9_G+
+                    PCH9_K,
+                  data = hogar, method = "class")
+
+
+
+rpart.plot(electronicos, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="ALUMBRADO Y ELECTRODOMESTICOS", cex = 1)
+```
