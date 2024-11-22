@@ -1,0 +1,74 @@
+# Universidad de San Carlos de Guatemala
+# Facultad de Ingeniería
+# Escuela de Estudios de Postgrado
+# Curso: Mineria de Datos.
+# Introducción a la Minería de Datos
+# Por: Denys Fernando Orozco Escobar
+---
+title: "RANDOM FOREST"
+output: html_notebook
+---
+
+```{r}
+### Paso numero 1: importacion de librerias
+library(randomForest)
+library(dplyr)
+```
+
+```{r}
+### Paso numero 2: carga de archivos
+migracion <- read.csv("MIGRACION_BDP.csv", sep = ",")
+```
+
+```{r}
+### Paso numero 3: omitir datos asignados con na
+migracion <- na.omit(migracion)
+```
+
+```{r}
+### Factorizando el departamento en busqueda de poder agrupar o categorizar por departamento
+migracion$DEPARTAMENTO <- as.factor(migracion$DEPARTAMENTO)
+### migracion <- migracion[-3]
+migracion <- migracion[,c(-2,-3,-4,-5,-6,-7,-8)]
+```
+
+```{r}
+### Generando una muestra 100 elementos
+set.seed(100)
+migracion <- migracion[sample(1:nrow(migracion)),]
+indice <- sample(1:nrow(migracion), 0.8*nrow(migracion))
+
+```
+```{r}
+### Entrenando el algoritmo
+entrenamiento <- migracion[indice,]
+prueba <- migracion[-indice,]
+```
+
+```{r}
+### Generando el RANDOM FOREST
+bosque <- randomForest(DEPARTAMENTO ~ MUNICIPIO + PEI3 + PEI4 + PEI5, data = entrenamiento, ntree = 50, mtry = 3)
+```
+
+```{r}
+### Prediccion
+entreno <- predict(bosque, prueba)
+entreno
+```
+
+```{r}
+### Convertir set de datos en frame
+data_frame_de_bosque <- data.frame(
+        MUNICIPIO = 315,
+        PEI3 = 2,
+        PEI4 = 25,
+        PEI5 = 2013
+)
+```
+
+```{r}
+### PREDICCION DEL DATAFRAME ANTERIOR
+prediccion <- predict(bosque, data_frame_de_bosque)
+prediccion
+```
+
