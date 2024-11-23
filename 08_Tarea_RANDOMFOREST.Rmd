@@ -29,7 +29,7 @@ migracion <- na.omit(migracion)
 ### Factorizando el departamento en busqueda de poder agrupar o categorizar por departamento
 migracion$DEPARTAMENTO <- as.factor(migracion$DEPARTAMENTO)
 ### migracion <- migracion[-3]
-migracion <- migracion[,c(-2,-3,-4,-5,-6,-7,-8)]
+migracion <- migracion[,c(-2,-3,-4,-6,-7,-8)]
 ```
 
 ```{r}
@@ -47,28 +47,62 @@ prueba <- migracion[-indice,]
 
 ```{r}
 ### Generando el RANDOM FOREST
-bosque <- randomForest(DEPARTAMENTO ~ MUNICIPIO + PEI3 + PEI4 + PEI5, data = entrenamiento, ntree = 50, mtry = 3)
-```
+bosque1 <- randomForest(DEPARTAMENTO ~ PEI3 + PEI4 + PEI5, data = entrenamiento, ntree = 50, mtry = 3)
 
-```{r}
 ### Prediccion
-entreno <- predict(bosque, prueba)
-entreno
-```
+entreno <- predict(bosque1, prueba)
 
-```{r}
 ### Convertir set de datos en frame
-data_frame_de_bosque <- data.frame(
-        MUNICIPIO = 315,
-        PEI3 = 2,
+data_frame_de_bosque1 <- data.frame(
+        PEI3 = 1,
         PEI4 = 25,
-        PEI5 = 2013
+        PEI5 = 2018
 )
+
+### PREDICCION DEL DATAFRAME ANTERIOR
+prediccion <- predict(bosque1, data_frame_de_bosque1)
+prediccion
 ```
 
 ```{r}
+### Generando el RANDOM FOREST
+bosque2 <- randomForest(AREA ~ PEI3 + PEI4 + PEI5, data = entrenamiento, ntree = 75, mtry = 3)
+
+### Prediccion
+entreno <- predict(bosque2, prueba)
+
+### Convertir set de datos en frame
+data_frame_de_bosque2 <- data.frame(
+        PEI3 = 1,
+        PEI4 = 25,
+        PEI5 = 2018
+)
+
 ### PREDICCION DEL DATAFRAME ANTERIOR
-prediccion <- predict(bosque, data_frame_de_bosque)
+prediccion <- predict(bosque2, data_frame_de_bosque2)
 prediccion
+```
+
+```{r}
+### Generando el RANDOM FOREST
+bosque3 <- randomForest(PEI4 ~ AREA + PEI3 + PEI5, data = entrenamiento, ntree = 50, mtry = 3)
+
+### Prediccion
+entreno <- predict(bosque3, prueba)
+
+### Convertir set de datos en frame
+data_frame_de_bosque3 <- data.frame(
+        AREA = 1,
+        PEI3 = 1,
+        PEI5 = 2015
+)
+
+### PREDICCION DEL DATAFRAME ANTERIOR
+prediccion <- predict(bosque3, data_frame_de_bosque3)
+prediccion
+```
+
+```{r}
+
 ```
 
