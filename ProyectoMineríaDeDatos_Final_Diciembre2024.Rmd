@@ -1,0 +1,242 @@
+# Universidad de San Carlos de Guatemala
+# Facultad de Ingeniería
+# Escuela de Estudios de Postgrado
+# Curso: Mineria de Datos.
+# Introducción a la Minería de Datos
+# Por: Denys Fernando Orozco Escobar
+---
+title: "Proyecto Final - Parte 02"
+output: html_notebook
+---
+
+```{r}
+# Seccion de importación de librerias
+library(haven)
+library(rpart)
+library(rpart.plot)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(forcats)
+library(mltools)
+library(data.table)
+```
+
+```{r}
+# Seccion de carga de archivos
+# Fuente: https://www.ine.gob.gt/vitales/
+datos_2013_D <- read_sav("_D_2013.sav")
+datos_2013_DF <- read_sav("DF_2013.sav")
+
+### Año 02 - 2014
+datos_2014_D <- read_sav("_D_2014.sav")
+datos_2014_DF <- read_sav("DF_2014.sav")
+
+### Año 03 - 2015
+datos_2015_D <- read_sav("_D_2015.sav")
+datos_2015_DF <- read_sav("DF_2015.sav")
+
+### Año 04 - 2016
+datos_2016_D <- read_sav("_20171204152107_D_2016.sav")
+datos_2016_DF <- read_sav("20171204152457_DF_2016.sav")
+
+### Año 05 - 2017
+datos_2017_D <- read_sav("_20181226142907_D_2017.sav")
+datos_2017_DF <- read_sav("20181226143403_DF_2017.sav")
+
+### Año 06 - 2018
+datos_2018_D <-read_sav("_20191129152006_D_2018.sav")
+datos_2018_DF <- read_sav("20191129151836_DF_2018.sav")
+
+### Año 07 - 2019 
+datos_2019_D <- read_sav("_20201201154851_D_2019.sav")
+datos_2019_DF <- read_sav("20201201154808_DF_2019.sav")
+
+### Año 08 - 2020
+datos_2020_D <- read_sav("_20210930225530_D_2020.sav")
+datos_2020_DF <- read_sav("20210930171901_DF_2020.sav")
+
+### Año 09 - 2021
+datos_2021_D <- read_sav("_20220929170549_D_2021.sav")
+datos_2021_DF <- read_sav("20220831203224_DF_2021.sav")
+
+### Año 10 - 2022
+datos_2022_D <- read_sav("_20230919232405_D_2022.sav")
+datos_2022_DF <- read_sav("20230828230013_DF_2022.sav")
+```
+
+```{r}
+datos_d <- bind_rows(datos_2013_D,
+                     datos_2014_D,
+                     datos_2015_D,
+                     datos_2016_D,
+                     datos_2017_D,
+                     datos_2018_D,
+                     datos_2019_D,
+                     datos_2020_D,
+                     datos_2021_D,
+                     datos_2022_D)
+
+### Liberando la memoria NO UTILIZADA
+rm(datos_2013_D)
+rm(datos_2014_D)
+rm(datos_2015_D)
+rm(datos_2016_D)
+rm(datos_2017_D)
+rm(datos_2018_D)
+rm(datos_2019_D)
+rm(datos_2020_D)
+rm(datos_2021_D)
+rm(datos_2022_D)
+gc()
+
+datos_2013_DF <- datos_2013_DF[-23]
+datos_2014_DF <- datos_2014_DF[-23]
+datos_2015_DF <- datos_2015_DF[-24]
+datos_2016_DF <- datos_2016_DF[-24]
+datos_2017_DF <- datos_2017_DF[-24]
+datos_2018_DF <- datos_2018_DF[-23]
+datos_2019_DF <- datos_2019_DF[-23]
+datos_2020_DF <- datos_2020_DF[-23]
+datos_2021_DF <- datos_2021_DF[-23]
+datos_2022_DF <- datos_2022_DF[-23]
+
+datos_df <- bind_rows(datos_2013_DF,
+                      datos_2014_DF,
+                      datos_2015_DF,
+                      datos_2016_DF,
+                      datos_2017_DF,
+                      datos_2018_DF,
+                      datos_2019_DF,
+                      datos_2020_DF,
+                      datos_2021_DF,
+                      datos_2022_DF)
+
+### Liberando la memoria NO UTILIZADA
+rm(datos_2013_DF)
+rm(datos_2014_DF)
+rm(datos_2015_DF)
+rm(datos_2016_DF)
+rm(datos_2017_DF)
+rm(datos_2018_DF)
+rm(datos_2019_DF)
+rm(datos_2020_DF)
+rm(datos_2021_DF)
+rm(datos_2022_DF)
+gc()
+
+```
+
+```{r}
+# Preparacion de los datos
+# datos_def <- na.omit(datos_d)
+datos_d$Caudef <- as.factor(datos_d$Caudef)
+
+# Arbol que predice causa de muerte segun edad del fallecido - ARBOL 1
+arbol_def_01 = rpart(Caudef ~
+            Sexo +
+            Edadif+
+            Depocu,
+            data = datos_d,
+            method = 'class'
+           )
+
+# Grafico del arbol
+rpart.plot(arbol_def_01, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+           main ="Motivo de fallecimiento según edad", cex = 0.50)
+
+# Eligiendo solo los datos necesarios para la prediccion
+causa_def_01 <- data.frame(
+  Sexo=c(1),
+  Edadif=c(18,19,20,21),
+  Depocu=c(1)
+)
+
+# Prediccion
+
+prediccion_def_01 <- predict(arbol_def_01, causa_def_01, type="class")
+prediccion_def_01
+```
+
+```{r}
+# Arbol que predice la escolaridad del fallecido segun el mes y edad del fallecido
+arbol_def_02 = rpart(Escodif ~
+            Mesreg +
+            Edadif+
+            Depocu,
+            data = datos_d,
+            method = 'class'
+           )
+
+# Grafico del arbol
+rpart.plot(arbol_def_02, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+        main ="Escolaridad del fallecido", cex = 0.50)
+
+# Eligiendo solo los datos necesarios para la prediccion
+causa_def_02 <- data.frame(
+  Mesreg=c(12),
+  Edadif=c(30,31,32,33,34,35,36,37,38,39),
+  Depocu=c(1)
+)
+
+# Prediccion
+
+prediccion_def_02 <- predict(arbol_def_02, causa_def_02, type="class")
+prediccion_def_02
+```
+
+```{r}
+# Arbol que predice causa de fallecimiento segun departamento, sexo de los neonatos y edad de la madre.
+arbol_def_03 = rpart(CAUDEF ~
+            DEPOCU +
+            SEXO+ #Sexo del neonato fallecido
+            EDADM,
+            data = datos_df,
+            method = 'class'
+           )
+
+# Grafico del arbol
+rpart.plot(arbol_def_03, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+        main ="Causa de fallecimiento del neonato de acuerdo al departamento", cex = 0.50)
+
+# Eligiendo solo los datos necesarios para la prediccion
+causa_def_03 <- data.frame(
+  DEPOCU=c(1),
+  SEXO=c(1),
+  EDADM=c(36,37,38,39,40,41,42)
+)
+
+# Prediccion
+
+prediccion_def_03 <- predict(arbol_def_03, causa_def_03, type="class")
+prediccion_def_03
+
+```
+
+```{r}
+# Arbol que predice edad de la madre del neonato fallecido segun departamento
+arbol_def_04 = rpart(ESCOLAM ~
+            EDADM +
+            DEPOCU +
+            SEMGES,
+            data = datos_df,
+            method = 'class'
+           )
+
+# Grafico del arbol
+rpart.plot(arbol_def_04, type=2, extra=0, under = TRUE, fallen.leaves = TRUE, box.palette = "BuGn", 
+        main ="Semanas de gestación del neonato fallecido", cex = 0.50)
+
+# Eligiendo solo los datos necesarios para la prediccion
+causa_def_04 <- data.frame(
+  EDADM=c(36,37,38,39,40,41,42),
+  DEPOCU=c(1),
+  SEMGES=c(8)
+)
+
+# Prediccion
+
+prediccion_def_04 <- predict(arbol_def_04, causa_def_04, type="class")
+prediccion_def_04
+
+```
