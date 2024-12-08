@@ -9,6 +9,7 @@ title: "Proyecto Final - Parte 02"
 output: html_notebook
 ---
 
+*Importar las librerias para la creación de árboles de decisión. Si no se encuentra la librería, ejecute la acción install.packages("libreria").
 ```{r}
 # Seccion de importación de librerias
 library(haven)
@@ -21,6 +22,7 @@ library(forcats)
 library(mltools)
 library(data.table)
 ```
+Carga de archivos tipo SPP (sav), se utilizan librerías como "haven", tidyverse y foreing. En eeste caso se exportan los archivos utilizando tidyverse.
 
 ```{r}
 # Seccion de carga de archivos
@@ -65,6 +67,7 @@ datos_2022_D <- read_sav("_20230919232405_D_2022.sav")
 datos_2022_DF <- read_sav("20230828230013_DF_2022.sav")
 ```
 
+Los sets de datos no contienen la misma cantidad de columnas, por lo que es preciso utilizar la función bind_rows que permite unir los sets de datos a partir de columnas en común y agregar las que no son comunes, los datos concatenados que no poseen valor se asigna n/a.
 ```{r}
 datos_d <- bind_rows(datos_2013_D,
                      datos_2014_D,
@@ -126,6 +129,19 @@ rm(datos_2022_DF)
 gc()
 
 ```
+Creando árboles de decisión
+
+Un árbol de decisión es una herramienta analítica utilizada para tomar decisiones, que se presenta en forma de un diagrama de flujo. Este tipo de modelo permite visualizar diferentes opciones y sus posibles resultados, facilitando la evaluación de decisiones complejas.
+
+Su estructura es la siguiente:
+
+Nodo raíz: Es el punto inicial del árbol donde comienza la toma de decisiones.
+
+Nodos internos: Representan decisiones basadas en atributos específicos y conducen a otros nodos o resultados.
+
+Nodos hoja: Son los resultados finales del proceso de decisión, mostrando las salidas del modelo, ya sea como etiquetas de clase en clasificación o valores numéricos en regresión
+
+A continuación se realiza la construcciónd de un árbol de decisión.
 
 ```{r}
 # Preparacion de los datos
@@ -133,11 +149,14 @@ gc()
 datos_d$Caudef <- as.factor(datos_d$Caudef)
 
 # Arbol que predice causa de muerte segun edad del fallecido - ARBOL 1
+
+#Selección de variables y asignación del nombre del árbol.
+
 arbol_def_01 = rpart(Caudef ~
-            Sexo +
+            Sexo + #Variables tipo numéricas
             Edadif+
             Depocu,
-            data = datos_d,
+            data = datos_d, #Data a utilizar
             method = 'class'
            )
 
@@ -214,7 +233,7 @@ prediccion_def_03
 ```
 
 ```{r}
-# Arbol que predice edad de la madre del neonato fallecido segun departamento
+# Arbol que predice la escolaridad del neonato fallecido segun datos de la madre
 arbol_def_04 = rpart(ESCOLAM ~
             EDADM +
             DEPOCU +
@@ -240,3 +259,137 @@ prediccion_def_04 <- predict(arbol_def_04, causa_def_04, type="class")
 prediccion_def_04
 
 ```
+
+Bosques Aleatorios
+
+```{r}
+#Declaración de librería Random Forest
+library(randomForest)
+library(dplyr)
+```
+*Bosques aleatorios*
+
+Los bosques aleatorios (o random forests) son un algoritmo de aprendizaje automático muy popular que combina múltiples árboles de decisión para mejorar la precisión y estabilidad de las predicciones. Este método es ampliamente utilizado tanto para tareas de clasificación como de regresión.
+
+Proceso de Construcción
+
+Muestreo Bootstrap: Se selecciona aleatoriamente una muestra del conjunto de datos con reemplazo para cada árbol. Esto significa que algunos ejemplos pueden aparecer varias veces, mientras que otros pueden no ser seleccionados.
+
+Selección Aleatoria de Características: En cada nodo del árbol, se selecciona un subconjunto aleatorio de características para determinar la división. Esto ayuda a reducir la correlación entre los árboles y mejora la generalización del modelo.
+
+Agregación: Una vez que todos los árboles han sido construidos, sus predicciones se combinan. Para clasificación, se utiliza el voto mayoritario; para regresión, se calcula el promedio
+
+*Librerías para Random Forest*
+
+Scikit-Learn es una de las bibliotecas más populares para el aprendizaje automático en Python. Proporciona una implementación sencilla y eficiente del algoritmo de bosques aleatorios a través de las clases RandomForestClassifier y RandomForestRegressor.
+
+
+```{r}
+#Bosque que predice el departamento de registro de la defunción, a partir del certificado de defunción, el sexo y la escolaridad del difunto.
+
+set.seed
+datos_db <- datos_d[sample(1:nrow(datos_d)),] #
+index <- sample(1:nrow(datos_d), 0.80*nrow(datos_d))
+
+#Datos de entrenamiento
+
+train <- datos_db[index,]
+test <- datos_db[-index,]
+
+#Creación del bosque aleatorio y entrenamiento
+
+
+bosque_1 <- randomForest(Depreg ~ Cerdef +Sexo +Escodif,
+                       data = train,
+                       ntree = 100,
+                       mtry = 3
+                       )
+
+#Probando el bosque
+prueba_1 <- predict(bosque_1, test)
+prueba_1
+
+#Revision de aciertos
+matriz_d<- table(test$Depreg, prueba_1)
+matriz_d
+
+
+#Precision
+precision_b1 <- sum(diag(matriz_d))/ sum(matriz_d)
+precision_b1
+
+```
+Predicción departamento de registro de acuerdo al certificado de defunción, sexo y escolaridad
+
+```{r}
+pred_1 <- data.frame(
+    Cerdef = 3,
+    Sexo = 2,
+    Escodif = 3
+    )
+prediccion <- predict(bosque_1, pred_1)
+prediccion
+
+```
+Predicción 2:
+
+```{r}
+pred_2 <- data.frame(
+    Cerdef = 2,
+    Sexo = 1,
+    Escodif = 6
+)
+prediccion_2 <- predict(bosque_1, pred_2)
+prediccion_2
+```
+Árbol No. 2 
+
+```{r}
+datos_df <- datos_df[datos_df$ASISREC != 0, ]
+set.seed
+# Sustituir NA con 0 en todo el data frame
+datos_df[is.na(datos_df)] <- 0
+
+datos_df <- datos_df[sample(1:nrow(datos_df)),] #
+index <- sample(1:nrow(datos_df), 0.80*nrow(datos_df))
+
+
+#Datos de entrenamiento 
+
+train <- datos_df[index,]
+test <- datos_df[-index,]
+
+#Creación del bosque aleatorio y entrenamiento
+
+
+bosque_2 <- randomForest(SEMGES ~ EDADM +SEXO +TOHINM,
+                       data = train,
+                       ntree = 100,
+                       mtry = 3
+                       )
+
+#Probando el bosque
+prueba_2 <- predict(bosque_2, test)
+prueba_2
+
+#Revision de aciertos
+matriz_df<- table(test$SEMGES, prueba_2)
+matriz_df
+
+
+#Precision
+precision_b2 <- sum(diag(matriz_df))/ sum(matriz_df)
+precision_b2
+
+```
+```{r}
+pred_df <- data.frame(
+    EDADM = 40,
+    SEXO = 1, #Sexo del feto
+    TOHINM = 1
+    )
+prediccion_df <- predict(bosque_2, pred_df)
+prediccion_df
+
+```
+
